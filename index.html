@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de fichiers - hydradomain.dpdns.org</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: scale(1.02);
+        }
+
+        .upload-area.dragover {
+            background: #e8eaff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .upload-hint {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .selected-files {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .file-item {
+            background: #f8f9ff;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .file-name {
+            color: #333;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .file-size {
+            color: #888;
+            font-size: 0.85rem;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-upload:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: block;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: block;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .result-link {
+            word-break: break-all;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-family: monospace;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .files-list {
+            margin-top: 30px;
+        }
+
+        .files-list h2 {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .file-card {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .file-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .file-card-name {
+            font-weight: 600;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .file-card-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s;
+        }
+
+        .file-card-delete:hover {
+            background: #c82333;
+        }
+
+        .file-card-info {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .file-card-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 Upload de fichiers</h1>
+        <p class="subtitle">hydradomain.dpdns.org</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">☁️</div>
+            <p class="upload-text">Cliquez ou glissez-déposez vos fichiers ici</p>
+            <p class="upload-hint">Images (JPEG, PNG, GIF, WEBP) et PDF uniquement • Max 10MB</p>
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" multiple>
+        </div>
+
+        <div class="selected-files" id="selectedFiles"></div>
+
+        <button class="btn btn-upload" id="uploadBtn" disabled>📤 Uploader</button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-text" id="progressText">0%</p>
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <div class="files-list">
+            <h2>📁 Fichiers uploadés</h2>
+            <div id="filesList"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFilesDiv = document.getElementById('selectedFiles');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const resultDiv = document.getElementById('result');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const filesListDiv = document.getElementById('filesList');
+
+        let selectedFiles = [];
+
+        // Click to select files
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Handle file input change
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            displaySelectedFiles();
+            uploadBtn.disabled = selectedFiles.length === 0;
+            resultDiv.style.display = 'none';
+        }
+
+        function displaySelectedFiles() {
+            selectedFilesDiv.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-item">
+                    <div>
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-size">${formatFileSize(file.size)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Upload files
+        uploadBtn.addEventListener('click', async () => {
+            if (selectedFiles.length === 0) return;
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '⏳ Upload en cours...';
+            resultDiv.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = '0%';
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            try {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        progressFill.style.width = percent + '%';
+                        progressText.textContent = percent + '%';
+                    }
+                });
+
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const response = JSON.parse(xhr.responseText);
+                        showResult(true, response.message, response.files);
+                    } else {
+                        const error = JSON.parse(xhr.responseText);
+                        showResult(false, error.message || 'Erreur lors de l\'upload');
+                    }
+                    resetUpload();
+                };
+
+                xhr.onerror = function() {
+                    showResult(false, 'Erreur de connexion au serveur');
+                    resetUpload();
+                };
+
+                xhr.open('POST', '/api/upload/multiple');
+                xhr.send(formData);
+
+            } catch (error) {
+                showResult(false, 'Erreur: ' + error.message);
+                resetUpload();
+            }
+        });
+
+        function showResult(success, message, files = []) {
+            resultDiv.className = 'result ' + (success ? 'success' : 'error');
+            
+            if (success) {
+                let linksHtml = files.map(f => `
+                    <p><strong>${f.originalName}</strong></p>
+                    <div class="result-link">${f.url}</div>
+                `).join('<hr style="margin: 15px 0; border: none; border-top: 1px solid rgba(0,0,0,0.1);">');
+                
+                resultDiv.innerHTML = `
+                    <div class="result-title">✅ ${message}</div>
+                    ${linksHtml}
+                    <p style="margin-top: 15px; font-size: 0.9rem;">
+                        <a href="${files[0]?.url}" target="_blank" style="color: #155724;">Voir le fichier →</a>
+                    </p>
+                `;
+                loadFiles();
+            } else {
+                resultDiv.innerHTML = `<div class="result-title">❌ Erreur</div><p>${message}</p>`;
+            }
+        }
+
+        function resetUpload() {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = '📤 Uploader';
+            selectedFiles = [];
+            fileInput.value = '';
+            selectedFilesDiv.innerHTML = '';
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+            }, 2000);
+        }
+
+        // Load files list
+        async function loadFiles() {
+            try {
+                const response = await fetch('/api/files');
+                const data = await response.json();
+                
+                if (data.success && data.files.length > 0) {
+                    filesListDiv.innerHTML = data.files.map(file => {
+                        const isImage = file.filename.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                        const preview = isImage ? `<img src="${file.url}" class="file-card-preview" alt="${file.filename}">` : '';
+                        
+                        return `
+                            <div class="file-card" id="file-${file.filename}">
+                                <div class="file-card-header">
+                                    <span class="file-card-name">${file.filename}</span>
+                                    <button class="file-card-delete" onclick="deleteFile('${file.filename}')">🗑️ Supprimer</button>
+                                </div>
+                                <div class="file-card-info">
+                                    📦 ${formatFileSize(file.size)} • ${new Date(file.createdAt).toLocaleDateString('fr-FR')}
+                                </div>
+                                <div class="file-card-info" style="margin-top: 5px;">
+                                    🔗 <a href="${file.url}" target="_blank" style="color: #667eea;">${file.url}</a>
+                                </div>
+                                ${preview}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    filesListDiv.innerHTML = '<div class="empty-state">Aucun fichier uploadé pour le moment</div>';
+                }
+            } catch (error) {
+                filesListDiv.innerHTML = '<div class="empty-state">Erreur lors du chargement des fichiers</div>';
+            }
+        }
+
+        // Delete file
+        async function deleteFile(filename) {
+            if (!confirm('Voulez-vous vraiment supprimer ce fichier ?')) return;
+            
+            try {
+                const response = await fetch(`/api/files/${filename}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById(`file-${filename}`).remove();
+                    if (document.querySelectorAll('.file-card').length === 0) {
+                        filesListDiv.innerHTML = '<div class="empty-state">Aucun fichier uploadé pour le moment</div>';
+                    }
+                } else {
+                    alert(data.message || 'Erreur lors de la suppression');
+                }
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
+
+        // Load files on page load
+        loadFiles();
+    </script>
+</body>
+</html>
