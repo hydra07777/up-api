@@ -363,7 +363,7 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // Upload files
+        // Upload files with fetch
         uploadBtn.addEventListener('click', async () => {
             if (selectedFiles.length === 0) return;
 
@@ -380,37 +380,21 @@
             });
 
             try {
-                const xhr = new XMLHttpRequest();
-                
-                xhr.upload.addEventListener('progress', (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        progressFill.style.width = percent + '%';
-                        progressText.textContent = percent + '%';
-                    }
+                const response = await fetch('http://localhost:4000/api/upload/multiple', {
+                    method: 'POST',
+                    body: formData
                 });
 
-                xhr.onload = function() {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        const response = JSON.parse(xhr.responseText);
-                        showResult(true, response.message, response.files);
-                    } else {
-                        const error = JSON.parse(xhr.responseText);
-                        showResult(false, error.message || 'Erreur lors de l\'upload');
-                    }
-                    resetUpload();
-                };
+                const data = await response.json();
 
-                xhr.onerror = function() {
-                    showResult(false, 'Erreur de connexion au serveur');
-                    resetUpload();
-                };
-
-                xhr.open('POST', '/api/upload/multiple');
-                xhr.send(formData);
-
+                if (response.ok) {
+                    showResult(true, data.message, data.files);
+                } else {
+                    showResult(false, data.message || 'Erreur lors de l\'upload');
+                }
             } catch (error) {
                 showResult(false, 'Erreur: ' + error.message);
+            } finally {
                 resetUpload();
             }
         });
@@ -451,7 +435,7 @@
         // Load files list
         async function loadFiles() {
             try {
-                const response = await fetch('/api/files');
+                const response = await fetch('http://localhost:4000/api/files');
                 const data = await response.json();
                 
                 if (data.success && data.files.length > 0) {
@@ -488,7 +472,7 @@
             if (!confirm('Voulez-vous vraiment supprimer ce fichier ?')) return;
             
             try {
-                const response = await fetch(`/api/files/${filename}`, {
+                const response = await fetch(`http://localhost:4000/api/files/${filename}`, {
                     method: 'DELETE'
                 });
                 const data = await response.json();

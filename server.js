@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const DOMAIN = process.env.DOMAIN || 'hydradomain.dpdns.org';
+const DOMAIN = process.env.DOMAIN || 'localhost:4000';
 
 // Middleware
 app.use(cors());
